@@ -4,3 +4,4 @@ dev-dist
 public/data/catalog.json
 .DS_Store
 *.log
+*.tsbuildinfo
