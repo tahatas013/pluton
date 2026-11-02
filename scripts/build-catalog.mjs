@@ -1,34 +1,32 @@
-// Rebrickable'ın herkese açık CSV dökümlerinden Plüton kataloğunu üretir.
-// GitHub Actions'ta her yayında ve haftada bir çalışır; çıktı: public/data/catalog.json
+// Rebrickable'ın herkese açık CSV dökümlerinden Plüton kataloğunu üretir ve
+// lego.tr verisiyle (public/data/tr.json, varsa) birleştirir.
+// GitHub Actions'ta her gün çalışır; çıktı: public/data/catalog.json
 //
 // Çıktı biçimi (yer kazanmak için diziler):
 //   themes: [id, ad, üstTemaId | null]
-//   sets:   [setNo, ad, yıl, temaId, parçaSayısı, minifigürSayısı, görsel]
-//   görsel: 1 = standart Rebrickable yolu, 0 = görsel yok, metin = media/ altındaki özel yol
+//   sets:   [setNo, ad, yıl, temaId, parça, minifigür, görsel, türkiye]
+//   görsel:  1 = standart Rebrickable yolu, 0 = yok, "sets/.." = Rebrickable media yolu, "https://.." = tam adres
+//   türkiye: 0 = lego.tr'de yok, yoksa [durum, fiyatTL, yol, türkçeAd, yaş, satışaÇıkış]
+//            durum: "s" stokta, "t" tükendi, "o" ön sipariş
 
 import { gunzipSync } from 'node:zlib';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const BASE = 'https://cdn.rebrickable.com/media/downloads/';
-const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '../public/data/catalog.json');
+const DIR = dirname(fileURLToPath(import.meta.url));
+const OUT = resolve(DIR, '../public/data/catalog.json');
+const TR_FILE = resolve(DIR, '../public/data/tr.json');
 
-// Set olmayan ürünlerin bulunduğu ana temalar (kitap, anahtarlık, yedek parça paketleri...)
+// Set olmayan ya da tüketiciye satılmayan ürünlerin ana temaları
 const EXCLUDED_ROOTS = new Set(
-  [
-    'Books',
-    'Gear',
-    'Key Chains',
-    'Magnets',
-    'Bulk Bricks',
-    'Service Packs',
-    'Supplemental',
-    'Video Games',
-    'Clikits',
-    'Educational and Dacta',
-  ].map((s) => s.toLowerCase()),
+  ['Bulk Bricks', 'Service Packs', 'Supplemental', 'Video Games', 'Clikits', 'Educational and Dacta'].map((s) =>
+    s.toLowerCase(),
+  ),
 );
+// Aksesuar/kitap gibi ürünler: yalnızca yeni olanlar (resmi sitede hâlâ satılıyor olabilir) ya da lego.tr'dekiler
+const MERCH_ROOTS = new Set(['Gear', 'Books', 'Key Chains', 'Magnets'].map((s) => s.toLowerCase()));
 
 function parseCSV(text) {
   const rows = [];
@@ -84,13 +82,14 @@ const [themesRaw, setsRaw, inventories, invFigs] = await Promise.all([
   download('inventory_minifigs'),
 ]);
 
+const tr = existsSync(TR_FILE) ? JSON.parse(readFileSync(TR_FILE, 'utf8')) : { items: {}, generated: null };
+const trItems = tr.items ?? {};
+console.log(`lego.tr verisi: ${Object.keys(trItems).length} ürün (${tr.generated ?? 'yok'})`);
+const trUsed = new Set();
+
 const themeById = new Map();
 for (const t of themesRaw) {
-  themeById.set(Number(t.id), {
-    id: Number(t.id),
-    name: t.name,
-    parent: t.parent_id ? Number(t.parent_id) : null,
-  });
+  themeById.set(Number(t.id), { id: Number(t.id), name: t.name, parent: t.parent_id ? Number(t.parent_id) : null });
 }
 const rootOf = (id) => {
   let t = themeById.get(id);
@@ -100,7 +99,7 @@ const rootOf = (id) => {
 };
 
 // Her setin ilk envanterindeki minifigür sayısı
-const firstInventory = new Map(); // setNo -> { id, version }
+const firstInventory = new Map();
 for (const inv of inventories) {
   const v = Number(inv.version);
   const cur = firstInventory.get(inv.set_num);
@@ -111,20 +110,35 @@ for (const f of invFigs) {
   figsByInventory.set(f.inventory_id, (figsByInventory.get(f.inventory_id) ?? 0) + Number(f.quantity || 0));
 }
 
+const maxYear = Math.max(...setsRaw.map((s) => Number(s.year) || 0).filter((y) => y <= new Date().getFullYear() + 1));
+const recentCut = Math.min(new Date().getFullYear(), maxYear) - 1;
+
 const allNums = new Set(setsRaw.map((s) => s.set_num));
 const usedThemes = new Set();
 const sets = [];
+const trTuple = (t) => (t ? [t[0], t[1], t[2], t[3], t[6] ?? null, t[8] ?? null] : 0);
+const markTheme = (themeId) => {
+  for (let t = themeById.get(themeId), g = 0; t && g < 10; t = themeById.get(t.parent), g++) usedThemes.add(t.id);
+};
 
 for (const s of setsRaw) {
   const parts = Number(s.num_parts);
+  const year = Number(s.year);
   const themeId = Number(s.theme_id);
   const root = rootOf(themeId);
-  if (!root || EXCLUDED_ROOTS.has(root.name.toLowerCase())) continue;
-  if (!(parts > 0)) continue;
+  if (!root) continue;
+  const rootName = root.name.toLowerCase();
 
   // 75192-2 gibi varyantları, 75192-1 varsa atla
   const m = /^(.*)-(\d+)$/.exec(s.set_num);
   if (m && Number(m[2]) > 1 && allNums.has(`${m[1]}-1`)) continue;
+  const base = m && m[2] === '1' ? m[1] : s.set_num;
+  const t = trItems[base];
+
+  const regular = !EXCLUDED_ROOTS.has(rootName) && !MERCH_ROOTS.has(rootName) && parts > 0;
+  const recentMerch = MERCH_ROOTS.has(rootName) && year >= recentCut;
+  if (!regular && !recentMerch && !t) continue;
+  if (t) trUsed.add(base);
 
   const inv = firstInventory.get(s.set_num);
   const figs = inv ? (figsByInventory.get(inv.id) ?? 0) : 0;
@@ -136,9 +150,33 @@ for (const s of setsRaw) {
     else if (s.img_url.startsWith('https://cdn.rebrickable.com/media/'))
       img = s.img_url.slice('https://cdn.rebrickable.com/media/'.length);
   }
+  if (!img && t?.[4]) img = t[4];
 
-  sets.push([s.set_num, s.name, Number(s.year), themeId, parts, figs, img]);
-  for (let t = themeById.get(themeId), g = 0; t && g < 10; t = themeById.get(t.parent), g++) usedThemes.add(t.id);
+  sets.push([s.set_num, s.name, year, themeId, parts || t?.[5] || 0, figs, img, trTuple(t)]);
+  markTheme(themeId);
+}
+
+// lego.tr'de olup Rebrickable'da henüz olmayan ürünler (çok yeni setler, aksesuarlar)
+const norm = (x) => x.toLowerCase().replace(/lego|[®™]/g, '').replace(/[^a-z0-9]+/g, '');
+const rootByName = new Map();
+for (const t of themeById.values()) if (t.parent == null) rootByName.set(norm(t.name), t.id);
+const extraThemes = new Map();
+let trOnly = 0;
+for (const [sku, t] of Object.entries(trItems)) {
+  if (trUsed.has(sku)) continue;
+  const cat = t[7] || 'Diğer';
+  let themeId = rootByName.get(norm(cat));
+  if (themeId == null) {
+    themeId = extraThemes.get(cat);
+    if (themeId == null) {
+      themeId = -1 - extraThemes.size;
+      extraThemes.set(cat, themeId);
+    }
+  } else markTheme(themeId);
+  const year = t[8] ? Number(t[8].slice(0, 4)) : new Date().getFullYear();
+  const num = /^\d+$/.test(sku) ? `${sku}-1` : sku;
+  sets.push([num, t[3], year, themeId, t[5] ?? 0, 0, t[4] ?? 0, trTuple(t)]);
+  trOnly++;
 }
 
 if (sets.length < 5000) {
@@ -147,24 +185,31 @@ if (sets.length < 5000) {
 
 sets.sort((a, b) => b[2] - a[2] || b[4] - a[4]);
 
-const themes = [...themeById.values()]
-  .filter((t) => usedThemes.has(t.id))
-  .map((t) => [t.id, t.name, t.parent]);
+const themes = [
+  ...[...themeById.values()].filter((t) => usedThemes.has(t.id)).map((t) => [t.id, t.name, t.parent]),
+  ...[...extraThemes].map(([name, id]) => [id, name, null]),
+];
 
-const catalog = { v: 1, source: 'rebrickable', generated: new Date().toISOString(), themes, sets };
+const catalog = {
+  v: 2,
+  source: 'rebrickable',
+  generated: new Date().toISOString(),
+  trGenerated: tr.generated ?? null,
+  themes,
+  sets,
+};
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(catalog));
 console.log(`Katalog hazır: ${sets.length} set, ${themes.length} tema → ${OUT}`);
+console.log(`  lego.tr ile eşleşen: ${trUsed.size}, yalnızca lego.tr'de olan: ${trOnly}`);
 
 // Kısa özet (CI kayıtlarından kontrol etmek için)
 const nowYear = new Date().getFullYear();
-for (let y = nowYear + 1; y >= nowYear - 2; y--) console.log(`  ${y}: ${sets.filter((s) => s[2] === y).length} set`);
+for (let y = nowYear + 1; y >= nowYear - 2; y--) {
+  const ys = sets.filter((s) => s[2] === y);
+  console.log(`  ${y}: ${ys.length} set, Türkiye'de ${ys.filter((s) => s[7]).length}`);
+}
 const imgKinds = { standart: 0, ozel: 0, yok: 0 };
 for (const s of sets) imgKinds[s[6] === 1 ? 'standart' : s[6] === 0 ? 'yok' : 'ozel']++;
-console.log('  görseller:', JSON.stringify(imgKinds), 'örnek özel yol:', sets.find((s) => typeof s[6] === 'string')?.[6] ?? '-');
-const recentRoots = new Map();
-for (const s of sets) if (s[2] >= nowYear - 2) {
-  const r = rootOf(s[3]);
-  recentRoots.set(r.name, (recentRoots.get(r.name) ?? 0) + 1);
-}
-console.log('  son 3 yılın temaları:', [...recentRoots].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([n, c]) => `${n} (${c})`).join(', '));
+console.log('  görseller:', JSON.stringify(imgKinds));
+if (extraThemes.size) console.log('  yeni temalar:', [...extraThemes.keys()].join(', '));

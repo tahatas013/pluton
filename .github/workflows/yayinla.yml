@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '17 3 * * 1' # her pazartesi set kataloğunu tazele
+    - cron: '23 4 * * *' # her gün 07:23 (TSİ): yeni setler, lego.tr fiyat ve stokları
   workflow_dispatch:
 
 permissions:
@@ -14,11 +14,12 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -26,7 +27,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Set kataloğunu Rebrickable'dan oluştur
+      - name: lego.tr fiyat ve stokları
+        run: npm run tr
+        env:
+          PLUTON_LIVE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+      - name: Set kataloğu (Rebrickable + lego.tr)
         run: npm run catalog
       - run: npm run build
       - uses: actions/upload-pages-artifact@v4
