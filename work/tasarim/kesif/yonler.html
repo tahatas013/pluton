@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Plüton — tasarım yönleri</title>
+<style>
+@font-face { font-family: 'Bricolage'; src: url(fonts/bricolage-grotesque-latin-standard-normal.woff2) format('woff2'); font-weight: 200 800; font-stretch: 75% 100%; }
+@font-face { font-family: 'Bricolage'; src: url(fonts/bricolage-grotesque-latin-ext-standard-normal.woff2) format('woff2'); font-weight: 200 800; font-stretch: 75% 100%; unicode-range: U+0100-024F, U+1E00-1EFF; }
+@font-face { font-family: 'Inter'; src: url(fonts/inter-latin-wght-normal.woff2) format('woff2'); font-weight: 100 900; }
+@font-face { font-family: 'Inter'; src: url(fonts/inter-latin-ext-wght-normal.woff2) format('woff2'); font-weight: 100 900; unicode-range: U+0100-024F, U+1E00-1EFF; }
+@font-face { font-family: 'Instrument'; src: url(fonts/instrument-serif-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Instrument'; src: url(fonts/instrument-serif-latin-ext-400-normal.woff2) format('woff2'); unicode-range: U+0100-024F, U+1E00-1EFF; }
+@font-face { font-family: 'Instrument'; font-style: italic; src: url(fonts/instrument-serif-latin-400-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Instrument'; font-style: italic; src: url(fonts/instrument-serif-latin-ext-400-italic.woff2) format('woff2'); unicode-range: U+0100-024F, U+1E00-1EFF; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #E4E2DD; font-family: Inter, system-ui, sans-serif; color: #111; padding: 48px 56px 64px; width: 1000px; }
+.sheet-title { font: 800 30px/1 Bricolage; letter-spacing: -0.02em; }
+.sheet-sub { margin-top: 8px; font-size: 15px; color: #555; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px 48px; margin-top: 40px; }
+.dir { display: flex; flex-direction: column; align-items: center; }
+.label { width: 410px; margin-bottom: 22px; }
+.label b { display: block; font: 800 22px/1.1 Bricolage; letter-spacing: -0.01em; }
+.label span { display: block; margin-top: 6px; font-size: 14px; line-height: 1.45; color: #444; }
+.phone { width: 390px; height: 844px; border-radius: 56px; overflow: hidden; position: relative; box-shadow: 0 0 0 11px #121212, 0 0 0 12px #3a3a3a, 0 40px 70px -20px rgba(0,0,0,.45); }
+.island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 122px; height: 35px; background: #000; border-radius: 20px; z-index: 20; }
+.sb { height: 54px; display: flex; justify-content: space-between; align-items: center; padding: 6px 30px 0 44px; font: 600 16px Inter; position: relative; z-index: 5; }
+.sb .r { display: flex; gap: 6px; align-items: center; }
+.sb svg { display: block; }
+.home { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; border-radius: 3px; background: #000; z-index: 30; }
+.art svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.ic { width: 24px; height: 24px; display: block; }
+
+/* ───────────── A · Oyuncak Kutusu ───────────── */
+.a { background: #fff; color: #141414; }
+.a .top { background: #E3000B; color: #fff; padding-bottom: 22px; border-radius: 0 0 30px 30px; position: relative; overflow: hidden;
+  background-image: radial-gradient(circle at 14px 14px, rgba(255,255,255,.09) 7px, transparent 7.5px); background-size: 28px 28px; }
+.a .top .sb { color: #fff; }
+.a .hello { padding: 10px 22px 0; font: 600 15px Inter; opacity: .85; }
+.a h1 { padding: 2px 22px 0; font: 800 42px/1.05 Bricolage; letter-spacing: -0.03em; }
+.a .search { margin: 16px 18px 0; height: 50px; border-radius: 16px; background: #fff; color: #8a8a8a; display: flex; align-items: center; gap: 10px; padding: 0 16px; font: 500 16px Inter; box-shadow: inset 0 -4px 0 rgba(0,0,0,.10); }
+.a .search .ic { color: #E3000B; }
+.a .hero { margin: 22px 18px 0; height: 168px; border-radius: 26px; background: #FFD500; box-shadow: 0 6px 0 #DDB300; position: relative; padding: 20px; }
+.a .hero .eb { font: 800 12px Inter; letter-spacing: .08em; color: #6b5600; }
+.a .hero .t { margin-top: 6px; font: 800 30px/1 Bricolage; letter-spacing: -0.02em; width: 150px; position: relative; z-index: 2; }
+.a .hero .cta { position: absolute; left: 20px; bottom: 20px; height: 38px; padding: 0 16px; border-radius: 12px; background: #141414; color: #fff; display: flex; align-items: center; gap: 8px; font: 700 14px Inter; box-shadow: 0 4px 0 #000; }
+.a .hero .art { position: absolute; right: 0; top: -14px; width: 160px; height: 170px; }
+.a .sec { display: flex; justify-content: space-between; align-items: baseline; padding: 30px 22px 12px; }
+.a .sec b { font: 800 22px Bricolage; letter-spacing: -0.02em; }
+.a .sec span { font: 700 14px Inter; color: #E3000B; }
+.a .themes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 18px; }
+.a .th { height: 84px; border-radius: 18px; padding: 14px; color: #fff; position: relative; font: 800 18px/1 Bricolage; display: flex; flex-direction: column; justify-content: flex-end; box-shadow: inset 0 -5px 0 rgba(0,0,0,.18); }
+.a .th small { font: 600 12px Inter; opacity: .8; margin-top: 4px; }
+.a .th::before { content: ''; position: absolute; top: 12px; right: 12px; width: 34px; height: 14px;
+  background: radial-gradient(circle at 7px 7px, rgba(255,255,255,.35) 6px, transparent 6.5px) 0 0/20px 14px repeat-x; }
+.a .tab { position: absolute; left: 0; right: 0; bottom: 0; height: 88px; background: #fff; border-top: 1px solid #eee; display: flex; justify-content: space-around; padding-top: 10px; z-index: 10; }
+.a .tab div { display: flex; flex-direction: column; align-items: center; gap: 4px; font: 600 11px Inter; color: #9a9a9a; width: 70px; }
+.a .tab .on { color: #E3000B; }
+
+/* ───────────── B · Galeri ───────────── */
+.b { background: #F2F0EB; color: #1a1a1a; }
+.b .row { display: flex; justify-content: space-between; align-items: center; padding: 14px 26px 0; font: 600 11px Inter; letter-spacing: .18em; }
+.b .logo { display: flex; align-items: center; gap: 8px; }
+.b .dot { width: 10px; height: 10px; border-radius: 50%; background: #D7141A; }
+.b .row .d { color: #8b877e; letter-spacing: .06em; }
+.b h1 { padding: 26px 26px 0; font: 400 58px/0.95 Instrument; letter-spacing: -0.02em; }
+.b h1 i { color: #8b877e; }
+.b .search { margin: 22px 26px 0; padding-bottom: 10px; border-bottom: 1px solid #cfcac0; display: flex; gap: 10px; align-items: center; color: #8b877e; font: 400 16px Inter; }
+.b .ped { margin: 26px 18px 0; height: 270px; border-radius: 6px; background: linear-gradient(180deg, #E9E6DF 0%, #DCD8CE 100%); position: relative; overflow: hidden; }
+.b .ped .art { position: absolute; left: 50%; top: 38px; width: 220px; height: 190px; transform: translateX(-50%); }
+.b .ped::after { content: ''; position: absolute; left: 50%; bottom: 34px; width: 210px; height: 22px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(60,50,30,.28), transparent); }
+.b .cap { display: flex; justify-content: space-between; padding: 12px 26px 0; font: 400 13px Inter; color: #6d6a63; }
+.b .cap b { color: #1a1a1a; font-weight: 600; }
+.b .list { margin: 30px 26px 0; }
+.b .list .h { font: 600 11px Inter; letter-spacing: .18em; color: #8b877e; padding-bottom: 10px; }
+.b .li { display: flex; justify-content: space-between; align-items: baseline; padding: 13px 0; border-top: 1px solid #d9d4ca; }
+.b .li b { font: 400 26px/1 Instrument; }
+.b .li span { font: 400 13px Inter; color: #8b877e; font-variant-numeric: tabular-nums; }
+.b .tab { position: absolute; left: 0; right: 0; bottom: 0; height: 86px; background: #F2F0EB; border-top: 1px solid #ddd8ce; display: flex; justify-content: space-around; padding-top: 16px; font: 500 12px Inter; color: #9a958b; z-index: 10; }
+.b .tab .on { color: #1a1a1a; position: relative; }
+.b .tab .on::after { content: ''; position: absolute; left: 50%; top: -9px; width: 5px; height: 5px; border-radius: 50%; background: #D7141A; transform: translateX(-50%); }
+
+/* ───────────── C · Gece Vitrini ───────────── */
+.c { background: #09090B; color: #F4F2EE; }
+.c .sb { color: #fff; }
+.c .eb { padding: 14px 22px 0; font: 700 11px Inter; letter-spacing: .2em; color: #E9C46A; text-transform: uppercase; }
+.c h1 { padding: 4px 22px 0; font: 800 46px/1 Bricolage; font-stretch: 75%; letter-spacing: -0.01em; text-transform: uppercase; }
+.c .search { margin: 16px 18px 0; height: 48px; border-radius: 14px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: 10px; padding: 0 16px; color: #8d8b87; font: 500 16px Inter; }
+.c .hero { margin: 20px 18px 0; height: 330px; border-radius: 28px; position: relative; overflow: hidden;
+  background: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(255,210,140,.33), transparent 70%), linear-gradient(180deg, #17161A, #0F0F11); border: 1px solid rgba(255,255,255,.06); }
+.c .hero .art { position: absolute; left: 50%; top: 34px; width: 210px; height: 170px; transform: translateX(-50%); filter: drop-shadow(0 18px 18px rgba(0,0,0,.6)); }
+.c .hero .floor { position: absolute; left: 0; right: 0; top: 190px; height: 140px; background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 60%); }
+.c .hero .txt { position: absolute; left: 22px; bottom: 22px; right: 22px; }
+.c .hero .k { font: 700 11px Inter; letter-spacing: .2em; color: #E9C46A; }
+.c .hero .t { margin-top: 6px; font: 700 30px/1 Bricolage; letter-spacing: -0.02em; }
+.c .hero .m { margin-top: 6px; font: 500 14px Inter; color: #8d8b87; }
+.c .hero .go { position: absolute; right: 0; bottom: 0; height: 40px; padding: 0 18px; border-radius: 20px; background: #E3000B; display: flex; align-items: center; font: 700 14px Inter; }
+.c .sec { padding: 26px 22px 12px; font: 700 11px Inter; letter-spacing: .2em; color: #8d8b87; }
+.c .pills { display: flex; gap: 8px; padding: 0 18px; flex-wrap: nowrap; overflow: hidden; }
+.c .pill { flex: none; height: 40px; padding: 0 16px 0 12px; border-radius: 20px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; gap: 9px; font: 600 14px Inter; }
+.c .pill i { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
+.c .tab { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); width: 330px; height: 64px; border-radius: 32px; background: rgba(40,40,44,.72); border: 1px solid rgba(255,255,255,.10); backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; z-index: 10; padding: 0 6px; box-shadow: 0 20px 40px rgba(0,0,0,.5); }
+.c .tab div { width: 76px; height: 52px; border-radius: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font: 600 10px Inter; color: #8d8b87; }
+.c .tab .on { background: rgba(255,255,255,.10); color: #fff; }
+.c .home { background: #fff; }
+
+/* ───────────── D · Tuğla Izgara ───────────── */
+.d { background: #F3F3F1; color: #121212; }
+.d .head { display: flex; justify-content: space-between; align-items: flex-end; padding: 12px 20px 0; }
+.d h1 { font: 800 44px/1 Bricolage; letter-spacing: -0.035em; }
+.d .head small { display: block; font: 600 14px Inter; color: #777; margin-bottom: 4px; }
+.d .av { width: 44px; height: 44px; border-radius: 14px; background: #121212; display: grid; place-items: center; }
+.d .av i { width: 18px; height: 18px; border-radius: 50%; background: #FFD500; box-shadow: inset 0 -3px 0 rgba(0,0,0,.2); }
+.d .bento { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 18px 16px 0; }
+.d .blk { border-radius: 16px; position: relative; padding: 26px 14px 14px; overflow: hidden; }
+.d .blk::before { content: ''; position: absolute; top: 8px; left: 10px; right: 10px; height: 12px;
+  background: radial-gradient(circle at 6px 6px, rgba(255,255,255,.28) 5px, rgba(0,0,0,.10) 5.5px, transparent 6.5px) 0 0/22px 12px repeat-x; }
+.d .big { grid-column: span 4; height: 176px; background: #E3000B; color: #fff; }
+.d .big .n { font: 800 92px/0.85 Bricolage; letter-spacing: -0.05em; margin-top: 6px; }
+.d .big .l { font: 700 15px Inter; margin-top: 8px; opacity: .9; }
+.d .big .art { position: absolute; right: 2px; bottom: 6px; width: 170px; height: 150px; }
+.d .half { grid-column: span 2; height: 112px; display: flex; flex-direction: column; justify-content: flex-end; font: 800 20px/1 Bricolage; letter-spacing: -0.01em; }
+.d .half small { font: 600 12px Inter; opacity: .7; margin-top: 4px; }
+.d .y { background: #FFD500; }
+.d .bl { background: #0055BF; color: #fff; }
+.d .q { grid-column: span 1; height: 86px; color: #fff; display: flex; align-items: flex-end; font: 800 13px/1.05 Bricolage; }
+.d .w { grid-column: span 4; height: 150px; background: #fff; display: flex; align-items: flex-end; justify-content: space-between; }
+.d .w b { font: 800 20px/1 Bricolage; }
+.d .w small { display: block; font: 600 12px Inter; color: #777; margin-top: 4px; }
+.d .w .art { width: 150px; height: 120px; margin-right: -4px; }
+.d .w::before { background: radial-gradient(circle at 6px 6px, #f6f6f6 5px, #e2e2e2 5.5px, transparent 6.5px) 0 0/22px 12px repeat-x; }
+.d .tab { position: absolute; left: 16px; right: 16px; bottom: 24px; height: 66px; border-radius: 22px; background: #121212; display: flex; justify-content: space-around; align-items: center; z-index: 10; }
+.d .tab div { display: flex; flex-direction: column; align-items: center; gap: 3px; font: 700 10px Inter; color: #777; }
+.d .tab .on { color: #FFD500; }
+</style>
+</head>
+<body>
+<div class="sheet-title">Plüton · tasarım yönleri</div>
+<div class="sheet-sub">Aynı Keşfet ekranı, dört farklı fikir. Tuğla çizimleri yer tutucu, uygulamada gerçek set fotoğrafları olacak.</div>
+
+<div class="grid">
+
+<!-- A -->
+<div class="dir">
+  <div class="label"><b>A · Oyuncak Kutusu</b><span>LEGO uygulamasının enerjisi: kırmızı-sarı, dolgun formlar, basınca içeri gömülen tuğla tuşlar.</span></div>
+  <div class="phone a">
+    <div class="island"></div>
+    <div class="top">
+      <div class="sb">9:41<span class="r" data-sb="#fff"></span></div>
+      <div class="hello">İyi akşamlar</div>
+      <h1>Keşfet</h1>
+      <div class="search"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Set adı ya da numarası</div>
+    </div>
+    <div class="hero">
+      <div class="eb">YENİ · 2026</div>
+      <div class="t">Yılın yenileri</div>
+      <div class="cta">312 set <span>→</span></div>
+      <div class="art" data-build="0"></div>
+    </div>
+    <div class="sec"><b>Temalar</b><span>Tümü</span></div>
+    <div class="themes">
+      <div class="th" style="background:#1B1B1F">Star Wars<small>1.204 set</small></div>
+      <div class="th" style="background:#F07C1E">Technic<small>612 set</small></div>
+      <div class="th" style="background:#7A1F2B">Harry Potter<small>288 set</small></div>
+      <div class="th" style="background:#0055BF">City<small>1.530 set</small></div>
+    </div>
+    <div class="tab" data-tab="a"></div>
+    <div class="home"></div>
+  </div>
+</div>
+
+<!-- B -->
+<div class="dir">
+  <div class="label"><b>B · Galeri</b><span>Müze sessizliği: bol boşluk, serif başlıklar, her set bir kaide üstünde sergi parçası gibi.</span></div>
+  <div class="phone b">
+    <div class="island"></div>
+    <div class="sb">9:41<span class="r" data-sb="#1a1a1a"></span></div>
+    <div class="row"><span class="logo"><i class="dot"></i>PLÜTON</span><span class="d">2 KASIM</span></div>
+    <h1>İyi akşamlar.<br><i>Bugün ne yapalım?</i></h1>
+    <div class="search"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Set ara…</div>
+    <div class="ped"><div class="art" data-build="1"></div></div>
+    <div class="cap"><span><b>01</b> — Yılın yenileri, 2026</span><span>312 set →</span></div>
+    <div class="list">
+      <div class="h">TEMALAR</div>
+      <div class="li"><b>Star Wars</b><span>1.204</span></div>
+      <div class="li"><b>Technic</b><span>612</span></div>
+      <div class="li"><b>Harry Potter</b><span>288</span></div>
+    </div>
+    <div class="tab"><span class="on">Keşfet</span><span>Ara</span><span>Koleksiyon</span><span>İstekler</span></div>
+    <div class="home"></div>
+  </div>
+</div>
+
+<!-- C -->
+<div class="dir">
+  <div class="label"><b>C · Gece Vitrini</b><span>Karanlık bir vitrin: setler spot ışığı altında, altın vurgular, yüzen cam sekme çubuğu. "Yetişkin koleksiyoncu" havası.</span></div>
+  <div class="phone c">
+    <div class="island"></div>
+    <div class="sb">9:41<span class="r" data-sb="#fff"></span></div>
+    <div class="eb">İyi akşamlar</div>
+    <h1>Keşfet</h1>
+    <div class="search"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Set adı ya da numarası</div>
+    <div class="hero">
+      <div class="floor"></div>
+      <div class="art" data-build="2"></div>
+      <div class="txt"><div class="k">2026 KOLEKSİYONU</div><div class="t">Yılın yenileri</div><div class="m">312 set</div><div class="go">Göz at</div></div>
+    </div>
+    <div class="sec">TEMALAR</div>
+    <div class="pills">
+      <div class="pill"><i style="color:#FFE81F;background:#FFE81F"></i>Star Wars</div>
+      <div class="pill"><i style="color:#F07C1E;background:#F07C1E"></i>Technic</div>
+      <div class="pill"><i style="color:#D3A625;background:#D3A625"></i>Harry Potter</div>
+    </div>
+    <div class="tab" data-tab="c"></div>
+    <div class="home"></div>
+  </div>
+</div>
+
+<!-- D -->
+<div class="dir">
+  <div class="label"><b>D · Tuğla Izgara</b><span>Her kutu bir tuğla: üstünde düğmeleriyle renkli bloklar, kocaman rakamlar, afiş gibi düz ve grafik.</span></div>
+  <div class="phone d">
+    <div class="island"></div>
+    <div class="sb">9:41<span class="r" data-sb="#121212"></span></div>
+    <div class="head"><div><small>İyi akşamlar</small><h1>Keşfet</h1></div><div class="av"><i></i></div></div>
+    <div class="bento">
+      <div class="blk big"><div class="n">2026</div><div class="l">312 yeni set</div><div class="art" data-build="3"></div></div>
+      <div class="blk half y">Ara<small>Ad ya da numara</small></div>
+      <div class="blk half bl">Şansına bir set<small>Rastgele keşif</small></div>
+      <div class="blk q" style="background:#1B1B1F">Star<br>Wars</div>
+      <div class="blk q" style="background:#F07C1E">Technic</div>
+      <div class="blk q" style="background:#7A1F2B">Harry<br>Potter</div>
+      <div class="blk q" style="background:#00852B">Mine­craft</div>
+      <div class="blk w"><div><b>Dev yapılar</b><small>3.000+ parça · 148 set</small></div><div class="art" data-build="1"></div></div>
+    </div>
+    <div class="tab" data-tab="d"></div>
+    <div class="home"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── İzometrik tuğla çizimi (yer tutucu set görseli) ──
+const U = [0.866, 0.5], V = [-0.866, 0.5];
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))));
+  return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+function build(bricks) {
+  const s = 20, H = 1.2, pts = [];
+  const P = (a, b, c) => { const p = [a * U[0] * s + b * V[0] * s, a * U[1] * s + b * V[1] * s - c * s]; pts.push(p); return p; };
+  const poly = (ps, fill) => `<polygon points="${ps.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')}" fill="${fill}" stroke="rgba(0,0,0,.18)" stroke-width=".6" stroke-linejoin="round"/>`;
+  let out = '';
+  [...bricks].sort((p, q) => p.z - q.z || (p.x + p.y) - (q.x + q.y)).forEach(k => {
+    const z0 = k.z * H, z1 = z0 + H, { x, y, L, D, c } = k;
+    out += poly([P(x, y + D, z0), P(x + L, y + D, z0), P(x + L, y + D, z1), P(x, y + D, z1)], shade(c, -0.18));
+    out += poly([P(x + L, y, z0), P(x + L, y + D, z0), P(x + L, y + D, z1), P(x + L, y, z1)], shade(c, -0.34));
+    out += poly([P(x, y, z1), P(x + L, y, z1), P(x + L, y + D, z1), P(x, y + D, z1)], c);
+    for (let j = 0; j < D; j++) for (let i = 0; i < L; i++) {
+      const b = P(x + i + .5, y + j + .5, z1), t = P(x + i + .5, y + j + .5, z1 + .28);
+      const rx = .3 * 1.2247 * s, ry = .3 * .7071 * s;
+      out += `<path d="M${b[0] - rx},${b[1]} L${t[0] - rx},${t[1]} A${rx},${ry} 0 0 1 ${t[0] + rx},${t[1]} L${b[0] + rx},${b[1]} A${rx},${ry} 0 0 1 ${b[0] - rx},${b[1]}Z" fill="${shade(c, -0.22)}"/>`;
+      out += `<ellipse cx="${t[0]}" cy="${t[1]}" rx="${rx}" ry="${ry}" fill="${shade(c, 0.12)}"/>`;
+    }
+  });
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const x0 = Math.min(...xs) - 4, y0 = Math.min(...ys) - 4, w = Math.max(...xs) - x0 + 4, h = Math.max(...ys) - y0 + 4;
+  return `<svg viewBox="${x0} ${y0} ${w} ${h}" preserveAspectRatio="xMidYMid meet">${out}</svg>`;
+}
+const BUILDS = [
+  [ {x:0,y:0,z:0,L:4,D:3,c:'#A0A5A9'}, {x:0,y:0,z:1,L:2,D:3,c:'#E3000B'}, {x:2,y:1,z:1,L:2,D:2,c:'#A0A5A9'}, {x:0,y:1,z:2,L:2,D:2,c:'#FFD500'}, {x:2,y:1,z:2,L:1,D:2,c:'#0055BF'} ],
+  [ {x:0,y:0,z:0,L:5,D:3,c:'#6C6E68'}, {x:1,y:0,z:1,L:3,D:3,c:'#A0A5A9'}, {x:1,y:1,z:2,L:3,D:1,c:'#A0A5A9'}, {x:2,y:1,z:3,L:1,D:1,c:'#E3000B'} ],
+  [ {x:0,y:0,z:0,L:4,D:3,c:'#05131D'}, {x:0,y:0,z:1,L:4,D:2,c:'#6C6E68'}, {x:1,y:0,z:2,L:2,D:2,c:'#E9C46A'}, {x:1,y:0,z:3,L:1,D:1,c:'#E3000B'} ],
+  [ {x:0,y:0,z:0,L:4,D:2,c:'#FFD500'}, {x:0,y:0,z:1,L:2,D:2,c:'#FFFFFF'}, {x:2,y:0,z:1,L:2,D:1,c:'#0055BF'}, {x:0,y:1,z:2,L:2,D:1,c:'#FFD500'} ],
+];
+document.querySelectorAll('[data-build]').forEach(el => el.innerHTML = build(BUILDS[+el.dataset.build]));
+
+// ── Durum çubuğu ikonları ──
+document.querySelectorAll('[data-sb]').forEach(el => {
+  const c = el.dataset.sb;
+  el.innerHTML = `<svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="${c}"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="${c}"/><rect x="10" y="3" width="3" height="9" rx="1" fill="${c}"/><rect x="15" y="0" width="3" height="12" rx="1" fill="${c}"/></svg>
+  <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5l2.4-2.9a3.6 3.6 0 00-4.8 0zM3.6 6.3a6.6 6.6 0 018.8 0l1.6-1.9a9.1 9.1 0 00-12 0zM.4 2.5a11.6 11.6 0 0115.2 0" fill="none" stroke="${c}" stroke-width="1.9" stroke-linecap="round"/></svg>
+  <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.8" fill="none" stroke="${c}" opacity=".4"/><rect x="2.5" y="2.5" width="19" height="8" rx="2.2" fill="${c}"/><path d="M25 4.5v4a2 2 0 000-4z" fill="${c}" opacity=".5"/></svg>`;
+});
+
+// ── Sekme ikonları ──
+const ICONS = {
+  kesfet: (f) => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5.6" ${f ? 'fill="currentColor"' : ''}/><ellipse cx="12" cy="12" rx="10.5" ry="3.6" transform="rotate(-22 12 12)"/></svg>`,
+  ara: () => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>`,
+  koleksiyon: () => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="9" width="18" height="11" rx="2.5"/><rect x="6" y="5" width="4.5" height="4" rx="1"/><rect x="13.5" y="5" width="4.5" height="4" rx="1"/></svg>`,
+  istekler: () => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0112 7.3a4.3 4.3 0 017.5 2.5C19.5 15.4 12 20 12 20z"/></svg>`,
+};
+const TABS = [['kesfet', 'Keşfet'], ['ara', 'Ara'], ['koleksiyon', 'Koleksiyon'], ['istekler', 'İstekler']];
+document.querySelectorAll('[data-tab]').forEach(el => {
+  el.innerHTML = TABS.map(([k, l], i) => `<div class="${i === 0 ? 'on' : ''}">${ICONS[k](i === 0)}${l}</div>`).join('');
+});
+</script>
+</body>
+</html>
