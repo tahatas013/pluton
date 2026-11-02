@@ -97,7 +97,8 @@ async function scrape() {
   const sm = await get(`${BASE}/xml/sitemap/product.xml`);
   const urls = [
     ...new Set(
-      [...sm.text.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim()).filter((u) => /lego\.tr\/product\//.test(u)),
+      // Ürün site haritasındaki her adres bir ürün; yeni ürünlerin adresinde "/product/" yok
+      [...sm.text.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim()).filter((u) => /^https:\/\/(www\.)?lego\.tr\/./.test(u)),
     ),
   ];
   console.log(`Site haritası: ${sm.status}, ${urls.length} ürün adresi`);
@@ -121,7 +122,14 @@ async function scrape() {
           // Aynı numara iki kez varsa stoktakini, sonra ucuz olanı tut
           const better = !prev || (p.status === 's' && prev.status !== 's') || (p.status === prev.status && (p.price ?? 1e9) < (prev.price ?? 1e9));
           if (better) items[p.sku] = p;
-          if ((samples.length < 4 && /^\d+$/.test(p.sku)) || ['76786', '75349', '10696'].includes(p.sku)) samples.push(p);
+          if ((samples.length < 3 && /^\d+$/.test(p.sku)) || ['76786', '60503'].includes(p.sku)) samples.push(p);
+          if (p.sku === '76786') {
+            // Yaş/parça alanının yapısını kayıtta görmek için (geçici)
+            for (const k of ['product-symbols', 'ti-birthday', 'ti-piece', 'Parça', 'Yaş']) {
+              const at = r.text.indexOf(k, r.text.indexOf('application/ld+json'));
+              if (at >= 0) console.log(`  [yapı] ${k}:`, r.text.slice(at - 120, at + 380).replace(/\s+/g, ' '));
+            }
+          }
         }
       }
       if (next % 250 === 0) console.log(`  ${next}/${urls.length} (${Math.round((Date.now() - started) / 1000)} sn)`);
