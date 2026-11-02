@@ -3,15 +3,36 @@ import { motion } from 'motion/react';
 import { BRICK, brickVars, type BrickColor } from '../data/colors';
 import { IsoBuild } from './IsoBuild';
 
-export function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
+export function Section({
+  title,
+  subtitle,
+  action,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="section">
       <div className="section-head">
-        <h3 className="label-tile">{title}</h3>
+        <div className={`label-tile ${subtitle ? 'two-line' : ''}`}>
+          <h3>{title}</h3>
+          {subtitle && <p>{subtitle}</p>}
+        </div>
         {action}
       </div>
       {children}
     </section>
+  );
+}
+
+export function MoreButton({ onClick, label = 'Tümü' }: { onClick: () => void; label?: string }) {
+  return (
+    <button className="tile press more-btn" onClick={onClick}>
+      {label}
+    </button>
   );
 }
 

@@ -7,6 +7,9 @@ const base = process.env.PLUTON_BASE ?? '/pluton/';
 
 export default defineConfig({
   base,
+  define: {
+    __BUILD__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [
     react(),
     VitePWA({

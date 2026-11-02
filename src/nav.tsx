@@ -9,6 +9,7 @@ export interface ListQuery {
   year?: number;
   minParts?: number;
   avail?: 'tr' | 'abroad';
+  coll?: string; // data/collections.ts içindeki koleksiyon kimliği
 }
 
 export interface ListRoute {

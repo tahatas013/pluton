@@ -174,3 +174,13 @@ export const CakeIcon = (p: P) => (
     <path d="M12 3.5c1 1.2 1.3 2.2.9 3a1 1 0 01-1.8 0c-.4-.8-.1-1.8.9-3z" fill="currentColor" />
   </svg>
 );
+
+/** Türk bayrağı (etiketlerde "Türkiye'de" anlamında) */
+export const TrFlag = ({ size = 12 }: { size?: number }) => (
+  <svg width={size * 1.5} height={size} viewBox="0 0 30 20" aria-hidden="true" className="flag">
+    <rect x=".75" y=".75" width="28.5" height="18.5" rx="3.5" fill="#E30A17" stroke="#fff" strokeWidth="1.5" />
+    <circle cx="12" cy="10" r="5.2" fill="#fff" />
+    <circle cx="13.3" cy="10" r="4.2" fill="#E30A17" />
+    <polygon fill="#fff" points="15.60,10.00 17.35,9.38 17.40,7.53 18.52,9.00 20.30,8.47 19.25,10.00 20.30,11.53 18.52,11.00 17.40,12.47 17.35,10.62" />
+  </svg>
+);

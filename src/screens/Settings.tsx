@@ -119,7 +119,7 @@ export function Settings() {
       </div>
 
       <p className="note-tile tile legal">
-        Plüton 1.0
+        Plüton · sürüm {new Date(__BUILD__).toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })}
         <br />
         Katalog her sabah kendiliğinden güncellenir. Set verileri Rebrickable'dan, Türkiye fiyat ve stokları
         resmi LEGO Türkiye mağazası lego.tr'den gelir. LEGO®, LEGO Group'un ticari markasıdır; bu uygulama LEGO

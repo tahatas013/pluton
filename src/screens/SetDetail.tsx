@@ -23,7 +23,7 @@ import {
   PlusIcon,
   TagIcon,
 } from '../ui/Icons';
-import { Rail, SetImage } from '../ui/SetBits';
+import { AvailBadge, Rail, SetImage } from '../ui/SetBits';
 import { useSheetDrag } from '../ui/Sheet';
 import { showToast } from '../ui/Toast';
 
@@ -81,7 +81,10 @@ export function SetDetail({ num: setNum }: { num: string }) {
         <div className="eyebrow">{themeLabel(cat, s)}</div>
         <h2>{s.name}</h2>
         {s.tr?.name && fold(s.tr.name) !== fold(s.name) && <div className="tr-name">{s.tr.name}</div>}
-        <span className="chip-num big">{s.base}</span>
+        <div className="detail-tags">
+          <span className="chip-num big">{s.base}</span>
+          <AvailBadge set={s} big />
+        </div>
       </div>
 
       <div className={`specs ${s.tr?.age ? 'specs-4' : ''}`}>

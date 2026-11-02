@@ -5,7 +5,7 @@ import { availBadge, partsLabel } from '../data/avail';
 import { brickVars } from '../data/colors';
 import { useNav } from '../nav';
 import { haptic } from '../lib/haptics';
-import { CheckIcon, ChevronRight, GlobeIcon, HeartIcon } from './Icons';
+import { CheckIcon, ChevronRight, GlobeIcon, HeartIcon, TrFlag } from './Icons';
 import { IsoBuild, hashSeed } from './IsoBuild';
 
 export const SetImage = memo(function SetImage({ set, className }: { set: LegoSet; className?: string }) {
@@ -29,13 +29,15 @@ export const SetImage = memo(function SetImage({ set, className }: { set: LegoSe
   );
 });
 
-export function AvailBadge({ set, inline }: { set: LegoSet; inline?: boolean }) {
+export function AvailBadge({ set, inline, big }: { set: LegoSet; inline?: boolean; big?: boolean }) {
   const b = availBadge(set);
-  if (!b) return null;
+  // Kartlarda "satıştan kalktı" gürültü yapar; yalnızca set sayfasında göster
+  if (!b || (!big && set.avail === 'retired')) return null;
   return (
-    <span className={`avail-badge ${inline ? 'inline' : ''}`} style={brickVars(b.color)}>
-      {b.abroad && <GlobeIcon size={12} />}
-      {b.text}
+    <span className={`avail-badge ${inline || big ? 'inline' : ''} ${big ? 'big' : ''}`} style={brickVars(b.color)}>
+      {b.icon === 'tr' && <TrFlag size={big ? 13 : 10} />}
+      {b.icon === 'globe' && <GlobeIcon size={big ? 15 : 12} />}
+      {big ? b.long : b.text}
     </span>
   );
 }

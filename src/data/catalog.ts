@@ -58,6 +58,7 @@ export interface Catalog {
   latestYear: number;
   generated: string;
   trGenerated: string | null;
+  hasTr: boolean; // Türkiye verisi var mı
   source: string;
 }
 
@@ -159,6 +160,7 @@ function parse(raw: RawCatalog): Catalog {
     latestYear,
     generated: raw.generated,
     trGenerated: raw.trGenerated ?? null,
+    hasTr,
     source: raw.source,
   };
 }
