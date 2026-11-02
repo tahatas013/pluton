@@ -155,3 +155,16 @@ const catalog = { v: 1, source: 'rebrickable', generated: new Date().toISOString
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(catalog));
 console.log(`Katalog hazır: ${sets.length} set, ${themes.length} tema → ${OUT}`);
+
+// Kısa özet (CI kayıtlarından kontrol etmek için)
+const nowYear = new Date().getFullYear();
+for (let y = nowYear + 1; y >= nowYear - 2; y--) console.log(`  ${y}: ${sets.filter((s) => s[2] === y).length} set`);
+const imgKinds = { standart: 0, ozel: 0, yok: 0 };
+for (const s of sets) imgKinds[s[6] === 1 ? 'standart' : s[6] === 0 ? 'yok' : 'ozel']++;
+console.log('  görseller:', JSON.stringify(imgKinds), 'örnek özel yol:', sets.find((s) => typeof s[6] === 'string')?.[6] ?? '-');
+const recentRoots = new Map();
+for (const s of sets) if (s[2] >= nowYear - 2) {
+  const r = rootOf(s[3]);
+  recentRoots.set(r.name, (recentRoots.get(r.name) ?? 0) + 1);
+}
+console.log('  son 3 yılın temaları:', [...recentRoots].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([n, c]) => `${n} (${c})`).join(', '));
