@@ -35,6 +35,7 @@ export interface Catalog {
   byNum: Map<string, LegoSet>;
   themes: Map<number, Theme>;
   roots: RootTheme[]; // son yıllarda en çok set çıkandan aza
+  featured: RootTheme[]; // ana sayfada gösterilecek "gerçek" temalar (promosyonlar hariç)
   rootById: Map<number, RootTheme>;
   latestYear: number;
   generated: string;
@@ -50,6 +51,9 @@ type RawCatalog = {
 };
 
 const IMG_BASE = 'https://cdn.rebrickable.com/media/';
+
+// Aranabilir ama ana sayfada öne çıkarılmayan temalar (promosyon, mağaza hediyesi vb.)
+const NOT_FEATURED = /^(promotional|lego brand store|other|seasonal|miscellaneous|legoland parks|lego exclusive|gear|books|key chains|magnets|service packs|bulk bricks|supplemental)$/i;
 
 function parse(raw: RawCatalog): Catalog {
   const themes = new Map<number, Theme>();
@@ -102,8 +106,9 @@ function parse(raw: RawCatalog): Catalog {
     if (!r.cover) r.cover = sets.find((s) => s.root === r.id && s.img) ?? null;
   }
   const roots = [...rootById.values()].sort((a, b) => b.recent - a.recent || b.count - a.count);
+  const featured = roots.filter((r) => !NOT_FEATURED.test(r.name));
 
-  return { sets, byNum, themes, roots, rootById, latestYear, generated: raw.generated, source: raw.source };
+  return { sets, byNum, themes, roots, featured, rootById, latestYear, generated: raw.generated, source: raw.source };
 }
 
 let pending: Promise<Catalog> | null = null;

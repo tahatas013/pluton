@@ -70,7 +70,7 @@ export function Search() {
           )}
           <Section title="Temalar">
             <div className="chip-cloud">
-              {cat.roots.slice(0, 18).map((t) => (
+              {cat.featured.slice(0, 18).map((t) => (
                 <button
                   key={t.id}
                   className="brick press chip"

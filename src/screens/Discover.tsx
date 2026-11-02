@@ -22,7 +22,7 @@ export function Discover() {
 
   const latest = useMemo(() => cat.sets.filter((s) => s.year === cat.latestYear), [cat]);
   const cover = latest.find((s) => s.img) ?? latest[0];
-  const themes = cat.roots.slice(0, 8);
+  const themes = cat.featured.slice(0, 8);
   const bigCount = useMemo(() => cat.sets.filter((s) => s.parts >= 3000).length, [cat]);
   const pool = useMemo(() => {
     const p = cat.sets.filter((s) => s.parts >= 150 && s.img);
