@@ -20,7 +20,8 @@ export function Discover() {
   const nav = useNav();
   const recent = useStore((s) => s.recent);
 
-  const latest = useMemo(() => cat.sets.filter((s) => s.year === cat.latestYear), [cat]);
+  // Yalnızca yapım setleri (giyim, çanta gibi parçasız ürünler hariç)
+  const latest = useMemo(() => cat.sets.filter((s) => s.year === cat.latestYear && s.parts > 0), [cat]);
   const cover = latest.find((s) => s.img) ?? latest[0];
   const themes = cat.featured.slice(0, 8);
   const bigCount = useMemo(() => cat.sets.filter((s) => s.parts >= 3000).length, [cat]);
@@ -35,7 +36,8 @@ export function Discover() {
 
   const tr = useMemo(() => {
     const inTr = cat.sets.filter((s) => s.avail === 'tr' || s.avail === 'tr-pre');
-    const fresh = [...inTr]
+    const fresh = inTr
+      .filter((s) => s.parts > 0)
       .sort((a, b) => (b.tr?.since ?? '').localeCompare(a.tr?.since ?? '') || b.year - a.year || b.parts - a.parts)
       .slice(0, 14);
     const abroad = cat.sets.filter((s) => s.avail === 'abroad');

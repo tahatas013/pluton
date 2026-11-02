@@ -20,14 +20,30 @@ Kurduktan sonra uygulama internetsiz de açılır; bakılan set görselleri önb
 - **Ara:** set adı ya da kutudaki numarayla arama
 - **Koleksiyon:** durum (kutusunda / yapıldı / sergide / söküldü), adet, not; toplam parça ve minifigür
 - **İstekler:** üç öncelik seviyesi; alınca tek dokunuşla koleksiyona taşınır
-- **Set sayfası:** parça ve minifigür sayısı, Türk mağazalarında (Akakçe, Trendyol, Hepsiburada, Amazon) set numarasıyla arama, montaj talimatları
+- **Türkiye durumu:** her set için resmi Türkiye mağazası [lego.tr](https://lego.tr)'deki fiyat ve stok;
+  Türkiye'de olmayan yeni setler "Yalnızca yurt dışında", henüz çıkmamışlar "Yakında" olarak işaretlenir
+- **Set sayfası:** parça ve minifigür sayısı, Türkçe ad, lego.tr / LEGO.com bağlantısı, Türk mağazalarında
+  (Akakçe, Trendyol, Hepsiburada, Amazon) set numarasıyla arama, montaj talimatları
 - **Yedek:** veriler cihazda tutulur; Ayarlar'dan yedek alıp AirDrop ile diğer cihaza aktarılabilir
+
+## Güncelleme (otomatik)
+
+Her sabah 07:23'te (TSİ) GitHub Actions şunları yapar ve siteyi yeniden yayınlar:
+
+1. `scripts/fetch-lego-tr.mjs` — lego.tr'deki her ürünün fiyatını ve stok durumunu okur
+   (robots.txt'ye uygun, kendini tanıtan bir User-Agent ile, en fazla 2 eşzamanlı istek).
+   Site o gün okunamazsa bir önceki günün verisi kullanılır.
+2. `scripts/build-catalog.mjs` — Rebrickable'ın güncel set listesini indirir ve lego.tr verisiyle birleştirir.
+   lego.tr'de olup listede olmayan ürünler (çok yeni setler, aksesuarlar) de eklenir.
+
+Uygulama kataloğu her açılışta internetten tazeler; internet yoksa son indirilen kataloğu kullanır.
+Elle güncellemek için: GitHub'da **Actions → Yayınla → Run workflow**. Saati değiştirmek için
+`.github/workflows/yayinla.yml` içindeki `cron` satırı (saatler UTC'dir).
 
 ## Nasıl çalışıyor
 
 - Vite + React + TypeScript, animasyonlar için Motion, veriler IndexedDB'de
-- `scripts/build-catalog.mjs` Rebrickable'ın herkese açık CSV dökümlerinden set kataloğunu üretir
-- GitHub Actions (`.github/workflows/yayinla.yml`) her push'ta ve her pazartesi kataloğu tazeleyip GitHub Pages'e yayınlar
+- Katalog ve Türkiye verisi derleme sırasında üretilir, depoya yazılmaz
 
 ## Geliştirme
 

@@ -11,6 +11,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write # günlük işin 60 gün sessizlikten sonra kapanmaması için
 
 concurrency:
   group: pages
@@ -37,6 +38,13 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
+      - name: Günlük işi açık tut
+        # GitHub, 60 gün değişiklik olmayan public repolarda zamanlanmış işleri kapatır
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/yayinla.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   deploy:
     needs: build

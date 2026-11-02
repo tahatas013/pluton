@@ -72,11 +72,6 @@ export function parseProduct(html, url) {
 
   const name = rawName.replace(/^\d{3,7}\s+/, '').replace(/^LEGO\s+/i, '').trim();
   const image = Array.isArray(prod.image) ? prod.image[0] : (prod.image?.url ?? prod.image ?? null);
-  // Parça ve yaş yalnızca ana ürünün simge alanından okunur (sayfadaki diğer kartlardan değil)
-  const at = html.indexOf('product-symbols');
-  const zone = at >= 0 ? html.slice(at, at + 5000) : '';
-  const pieces = zone.match(/ti-piece"?[^>]*>\s*<\/i>\s*(?:<[^>]+>\s*)*?([\d.]+)\s*</);
-  const age = zone.match(/ti-birthday"?[^>]*>\s*<\/i>\s*(?:<[^>]+>\s*)*?(\d[^<]{0,8}?)\s*</);
   const category = clean(String(prod.category ?? '').split('>').pop()).replace(/^LEGO\s*/i, '');
 
   return {
@@ -86,11 +81,22 @@ export function parseProduct(html, url) {
     path,
     name,
     image: typeof image === 'string' ? image : null,
-    pieces: pieces ? Number(pieces[1].replace(/\./g, '')) : null,
-    age: age ? clean(age[1]) : null,
+    pieces: null, // ürün kartlarından doldurulur (harvestCards)
+    age: null,
     category,
     since: typeof offer?.validFrom === 'string' ? offer.validFrom.slice(0, 10) : null,
   };
+}
+
+/**
+ * Ürün sayfasının kendisinde yaş ve parça yok, ama sayfadaki "benzer ürün" kartlarında var.
+ * Okunan her sayfadaki kartlardan bu bilgiyi toplar; ek istek gerekmez.
+ */
+const CARD = /<i class="ti-birthday"><\/i>\s*<span>([^<]{1,10})<\/span>[\s\S]{0,250}?<i class="ti-piece"><\/i>\s*<span>([\d.]+)<\/span>[\s\S]{0,500}?class="product-title[^"]*">\s*(\d{3,7})\s/g;
+export function harvestCards(html, into) {
+  for (const m of html.matchAll(CARD)) {
+    if (!into.has(m[3])) into.set(m[3], { age: clean(m[1]), pieces: Number(m[2].replace(/\./g, '')) || null });
+  }
 }
 
 async function scrape() {
@@ -105,6 +111,7 @@ async function scrape() {
   if (urls.length < 200) throw new Error('Ürün site haritası beklenenden kısa');
 
   const items = {};
+  const cards = new Map();
   let next = 0, failed = 0, unparsed = 0;
   const samples = [];
   const started = Date.now();
@@ -115,6 +122,7 @@ async function scrape() {
       const r = await get(url);
       if (r.status !== 200) failed++;
       else {
+        harvestCards(r.text, cards);
         const p = parseProduct(r.text, url);
         if (!p) unparsed++;
         else {
@@ -123,13 +131,6 @@ async function scrape() {
           const better = !prev || (p.status === 's' && prev.status !== 's') || (p.status === prev.status && (p.price ?? 1e9) < (prev.price ?? 1e9));
           if (better) items[p.sku] = p;
           if ((samples.length < 3 && /^\d+$/.test(p.sku)) || ['76786', '60503'].includes(p.sku)) samples.push(p);
-          if (p.sku === '76786') {
-            // Yaş/parça alanının yapısını kayıtta görmek için (geçici)
-            for (const k of ['product-symbols', 'ti-birthday', 'ti-piece', 'Parça', 'Yaş']) {
-              const at = r.text.indexOf(k, r.text.indexOf('application/ld+json'));
-              if (at >= 0) console.log(`  [yapı] ${k}:`, r.text.slice(at - 120, at + 380).replace(/\s+/g, ' '));
-            }
-          }
         }
       }
       if (next % 250 === 0) console.log(`  ${next}/${urls.length} (${Math.round((Date.now() - started) / 1000)} sn)`);
@@ -139,6 +140,10 @@ async function scrape() {
   await Promise.all(Array.from({ length: WORKERS }, worker));
 
   const list = Object.values(items);
+  for (const p of list) {
+    const c = cards.get(p.sku);
+    if (c) Object.assign(p, c);
+  }
   console.log(`Okunan: ${list.length} ürün · hata: ${failed} · ayrıştırılamayan: ${unparsed}`);
   console.log(`  stokta: ${list.filter((x) => x.status === 's').length}, tükendi: ${list.filter((x) => x.status === 't').length}, ön sipariş: ${list.filter((x) => x.status === 'o').length}`);
   for (const s of samples) console.log('  örnek:', JSON.stringify(s));

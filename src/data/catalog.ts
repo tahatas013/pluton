@@ -146,7 +146,8 @@ function parse(raw: RawCatalog): Catalog {
     if (!r.cover) r.cover = sets.find((s) => s.root === r.id && s.img) ?? null;
   }
   const roots = [...rootById.values()].sort((a, b) => b.recent - a.recent || b.count - a.count);
-  const featured = roots.filter((r) => !NOT_FEATURED.test(r.name));
+  // Negatif kimlikli temalar yalnızca lego.tr'de olan kategoriler (giyim, çanta…); öne çıkarılmaz
+  const featured = roots.filter((r) => !NOT_FEATURED.test(r.name) && r.id > 0);
 
   return {
     sets,
