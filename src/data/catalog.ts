@@ -12,7 +12,25 @@ export interface LegoSet {
   parts: number;
   figs: number;
   img: string | null;
+  tr: TrInfo | null; // resmi Türkiye mağazası (lego.tr) bilgisi
+  avail: Avail;
 }
+
+export interface TrInfo {
+  status: 's' | 't' | 'o'; // stokta, tükendi, ön sipariş
+  price: number | null; // TL
+  url: string;
+  name: string; // Türkçe ad
+  age: string | null;
+  since: string | null; // lego.tr'de satışa çıkış tarihi
+}
+
+/**
+ * tr: Türkiye'de satışta · tr-out: Türkiye'de tükendi · tr-pre: ön sipariş
+ * abroad: yeni ama lego.tr'de yok (yalnızca yurt dışında) · retired: eski, büyük ihtimalle satıştan kalkmış
+ * soon: duyurulmuş ama henüz çıkmamış · none: promosyon/hediye gibi satılmayan ürünler
+ */
+export type Avail = 'tr' | 'tr-out' | 'tr-pre' | 'abroad' | 'soon' | 'retired' | 'none';
 
 export interface Theme {
   id: number;
@@ -39,6 +57,7 @@ export interface Catalog {
   rootById: Map<number, RootTheme>;
   latestYear: number;
   generated: string;
+  trGenerated: string | null;
   source: string;
 }
 
@@ -46,9 +65,11 @@ type RawCatalog = {
   v: number;
   source: string;
   generated: string;
+  trGenerated?: string | null;
   themes: [number, string, number | null][];
-  sets: [string, string, number, number, number, number, number | string][];
+  sets: [string, string, number, number, number, number, number | string, RawTr?][];
 };
+type RawTr = 0 | ['s' | 't' | 'o', number | null, string, string, string | null, string | null];
 
 const IMG_BASE = 'https://cdn.rebrickable.com/media/';
 
@@ -68,7 +89,7 @@ function parse(raw: RawCatalog): Catalog {
     t.root = cur.id;
   }
 
-  const sets: LegoSet[] = raw.sets.map(([num, name, year, theme, parts, figs, img]) => ({
+  const sets: LegoSet[] = raw.sets.map(([num, name, year, theme, parts, figs, img, t]) => ({
     num,
     base: baseNum(num),
     name,
@@ -77,7 +98,16 @@ function parse(raw: RawCatalog): Catalog {
     root: themes.get(theme)?.root ?? theme,
     parts,
     figs,
-    img: img === 1 ? `${IMG_BASE}sets/${num}.jpg` : typeof img === 'string' && img ? IMG_BASE + img : null,
+    img:
+      img === 1
+        ? `${IMG_BASE}sets/${num}.jpg`
+        : typeof img === 'string' && img
+          ? img.startsWith('http')
+            ? img
+            : IMG_BASE + img
+          : null,
+    tr: t ? { status: t[0], price: t[1], url: `https://lego.tr${t[2]}`, name: t[3], age: t[4], since: t[5] } : null,
+    avail: 'none',
   }));
   const byNum = new Map(sets.map((s) => [s.num, s]));
 
@@ -87,6 +117,16 @@ function parse(raw: RawCatalog): Catalog {
   let latestYear = nowYear;
   while (latestYear > 1950 && (perYear.get(latestYear) ?? 0) < 20) latestYear--;
   if (latestYear <= 1950) latestYear = Math.max(...perYear.keys());
+
+  const hasTr = sets.some((s) => s.tr);
+  for (const s of sets) {
+    const rootName = themes.get(s.root)?.name ?? '';
+    if (s.tr) s.avail = s.tr.status === 's' ? 'tr' : s.tr.status === 'o' ? 'tr-pre' : 'tr-out';
+    else if (NOT_FEATURED.test(rootName)) s.avail = 'none';
+    else if (s.year > nowYear) s.avail = 'soon';
+    else if (!hasTr) s.avail = 'none'; // Türkiye verisi hiç yoksa yanlış etiket gösterme
+    else s.avail = s.year >= latestYear - 1 ? 'abroad' : 'retired';
+  }
 
   const rootById = new Map<number, RootTheme>();
   for (const s of sets) {
@@ -108,7 +148,18 @@ function parse(raw: RawCatalog): Catalog {
   const roots = [...rootById.values()].sort((a, b) => b.recent - a.recent || b.count - a.count);
   const featured = roots.filter((r) => !NOT_FEATURED.test(r.name));
 
-  return { sets, byNum, themes, roots, featured, rootById, latestYear, generated: raw.generated, source: raw.source };
+  return {
+    sets,
+    byNum,
+    themes,
+    roots,
+    featured,
+    rootById,
+    latestYear,
+    generated: raw.generated,
+    trGenerated: raw.trGenerated ?? null,
+    source: raw.source,
+  };
 }
 
 let pending: Promise<Catalog> | null = null;
@@ -152,7 +203,7 @@ function ensureIndex(cat: Catalog) {
   index = cat.sets.map((s) => {
     const t = cat.themes.get(s.theme)?.name ?? '';
     const r = cat.themes.get(s.root)?.name ?? '';
-    return ` ${fold(`${s.base} ${s.name} ${t} ${r !== t ? r : ''}`)} `;
+    return ` ${fold(`${s.base} ${s.name} ${t} ${r !== t ? r : ''} ${s.tr?.name ?? ''}`)} `;
   });
   indexFor = cat;
   return index;

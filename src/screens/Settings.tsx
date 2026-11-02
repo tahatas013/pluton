@@ -93,8 +93,16 @@ export function Settings() {
           <b>{dateTR(cat.generated)}</b>
         </div>
         <div className="row info">
+          <span>Türkiye fiyatları</span>
+          <b>{cat.trGenerated ? dateTR(cat.trGenerated) : '—'}</b>
+        </div>
+        <div className="row info">
+          <span>Türkiye'de satışta</span>
+          <b>{num(cat.sets.filter((x) => x.avail === 'tr').length)} set</b>
+        </div>
+        <div className="row info">
           <span>Kaynak</span>
-          <b>{cat.source === 'dev-fixture' ? 'Örnek veri' : 'Rebrickable'}</b>
+          <b>{cat.source === 'dev-fixture' ? 'Örnek veri' : 'Rebrickable + lego.tr'}</b>
         </div>
       </div>
 
@@ -113,7 +121,8 @@ export function Settings() {
       <p className="note-tile tile legal">
         Plüton 1.0
         <br />
-        Set verileri ve görselleri Rebrickable'dan gelir. LEGO®, LEGO Group'un ticari markasıdır; bu uygulama LEGO
+        Katalog her sabah kendiliğinden güncellenir. Set verileri Rebrickable'dan, Türkiye fiyat ve stokları
+        resmi LEGO Türkiye mağazası lego.tr'den gelir. LEGO®, LEGO Group'un ticari markasıdır; bu uygulama LEGO
         Group ile bağlantılı değildir.
       </p>
     </div>

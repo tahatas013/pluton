@@ -8,6 +8,7 @@ export interface ListQuery {
   theme?: number;
   year?: number;
   minParts?: number;
+  avail?: 'tr' | 'abroad';
 }
 
 export interface ListRoute {

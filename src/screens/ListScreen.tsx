@@ -9,12 +9,14 @@ import { Screen } from '../ui/Screen';
 import { SetCard } from '../ui/SetBits';
 
 type Sort = 'new' | 'big';
+type Where = 'all' | 'tr' | 'abroad';
+const inTr = (a: string) => a === 'tr' || a === 'tr-pre' || a === 'tr-out';
 const STEP = 40;
 
 export function ListScreen({ route }: { route: ListRoute }) {
   const cat = useCatalog();
   const nav = useNav();
-  const { theme, year, minParts } = route.query;
+  const { theme, year, minParts, avail } = route.query;
 
   const base = useMemo(
     () =>
@@ -22,10 +24,13 @@ export function ListScreen({ route }: { route: ListRoute }) {
         (s) =>
           (theme == null || s.root === theme) &&
           (year == null || s.year === year) &&
-          (minParts == null || s.parts >= minParts),
+          (minParts == null || s.parts >= minParts) &&
+          (avail == null || (avail === 'tr' ? s.avail === 'tr' || s.avail === 'tr-pre' : s.avail === avail)),
       ),
-    [cat, theme, year, minParts],
+    [cat, theme, year, minParts, avail],
   );
+  const hasTr = useMemo(() => avail == null && base.some((s) => s.tr), [base, avail]);
+  const [where, setWhere] = useState<Where>('all');
 
   // Tema listesinde yıllara, yıl listesinde temalara göre süzme çipleri
   const chips = useMemo(() => {
@@ -45,15 +50,17 @@ export function ListScreen({ route }: { route: ListRoute }) {
   }, [base, theme, year, cat]);
 
   const [chip, setChip] = useState<number | null>(null);
-  const [sort, setSort] = useState<Sort>(theme != null ? 'new' : 'big');
+  const [sort, setSort] = useState<Sort>(theme != null || avail != null ? 'new' : 'big');
   const [limit, setLimit] = useState(STEP);
 
   const list = useMemo(() => {
-    const f = chip == null ? base : base.filter((s) => (theme != null ? s.year === chip : s.root === chip));
+    let f = chip == null ? base : base.filter((s) => (theme != null ? s.year === chip : s.root === chip));
+    if (where === 'tr') f = f.filter((s) => inTr(s.avail));
+    if (where === 'abroad') f = f.filter((s) => s.avail === 'abroad');
     return sort === 'big' ? [...f].sort((a, b) => b.parts - a.parts) : f;
-  }, [base, chip, sort, theme]);
+  }, [base, chip, sort, theme, where]);
 
-  useEffect(() => setLimit(STEP), [chip, sort]);
+  useEffect(() => setLimit(STEP), [chip, sort, where]);
 
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -78,6 +85,20 @@ export function ListScreen({ route }: { route: ListRoute }) {
         value={sort}
         onChange={setSort}
       />
+
+      {hasTr && (
+        <Segmented
+          id={`${route.key}-w`}
+          label="Nerede satılıyor"
+          options={[
+            { id: 'all', label: 'Hepsi' },
+            { id: 'tr', label: "Türkiye'de" },
+            { id: 'abroad', label: 'Yurt dışı' },
+          ]}
+          value={where}
+          onChange={setWhere}
+        />
+      )}
 
       {chips.length > 1 && (
         <div className="chips-row">

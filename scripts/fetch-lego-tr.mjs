@@ -63,23 +63,27 @@ export function parseProduct(html, url) {
       : 't';
 
   const rawName = clean(prod.name);
-  let sku = clean(prod.sku);
-  const lead = rawName.match(/^(\d{3,7})\s/);
-  if (!/^\d{3,7}$/.test(sku) && lead) sku = lead[1];
-  if (!sku) sku = `tr-${new URL(url).pathname.split('/').pop()}`;
+  const path = new URL(url).pathname;
+  const slug = path.split('/').pop();
+  // JSON-LD'deki "sku" bazı ürünlerde mağazanın iç numarası; set numarası adres ve addan alınır
+  const fromSlug = slug.match(/^(\d{3,7})-/)?.[1];
+  const fromName = rawName.match(/^(\d{3,7})\s/)?.[1];
+  const sku = fromSlug || fromName || `tr-${slug}`;
 
   const name = rawName.replace(/^\d{3,7}\s+/, '').replace(/^LEGO\s+/i, '').trim();
   const image = Array.isArray(prod.image) ? prod.image[0] : (prod.image?.url ?? prod.image ?? null);
-  // Ana ürün bilgisi sayfada benzer ürünlerden önce gelir; ilk eşleşmeyi al
-  const pieces = html.match(/ti-piece"\s*><\/i>\s*<span>\s*([\d.]+)\s*<\/span>/);
-  const age = html.match(/ti-birthday"\s*><\/i>\s*<span>\s*([^<]{1,10}?)\s*<\/span>/);
+  // Parça ve yaş yalnızca ana ürünün simge alanından okunur (sayfadaki diğer kartlardan değil)
+  const at = html.indexOf('product-symbols');
+  const zone = at >= 0 ? html.slice(at, at + 5000) : '';
+  const pieces = zone.match(/ti-piece"?[^>]*>\s*<\/i>\s*(?:<[^>]+>\s*)*?([\d.]+)\s*</);
+  const age = zone.match(/ti-birthday"?[^>]*>\s*<\/i>\s*(?:<[^>]+>\s*)*?(\d[^<]{0,8}?)\s*</);
   const category = clean(String(prod.category ?? '').split('>').pop()).replace(/^LEGO\s*/i, '');
 
   return {
     sku,
     status,
     price: Number.isFinite(priceNum) && priceNum > 0 ? Math.round(priceNum) : null,
-    path: new URL(url).pathname,
+    path,
     name,
     image: typeof image === 'string' ? image : null,
     pieces: pieces ? Number(pieces[1].replace(/\./g, '')) : null,
@@ -117,7 +121,7 @@ async function scrape() {
           // Aynı numara iki kez varsa stoktakini, sonra ucuz olanı tut
           const better = !prev || (p.status === 's' && prev.status !== 's') || (p.status === prev.status && (p.price ?? 1e9) < (prev.price ?? 1e9));
           if (better) items[p.sku] = p;
-          if (samples.length < 5 && /^\d+$/.test(p.sku)) samples.push(p);
+          if ((samples.length < 4 && /^\d+$/.test(p.sku)) || ['76786', '75349', '10696'].includes(p.sku)) samples.push(p);
         }
       }
       if (next % 250 === 0) console.log(`  ${next}/${urls.length} (${Math.round((Date.now() - started) / 1000)} sn)`);
@@ -130,10 +134,11 @@ async function scrape() {
   console.log(`Okunan: ${list.length} ürün · hata: ${failed} · ayrıştırılamayan: ${unparsed}`);
   console.log(`  stokta: ${list.filter((x) => x.status === 's').length}, tükendi: ${list.filter((x) => x.status === 't').length}, ön sipariş: ${list.filter((x) => x.status === 'o').length}`);
   for (const s of samples) console.log('  örnek:', JSON.stringify(s));
+  console.log(`  set numaralı: ${list.filter((x) => /^\d+$/.test(x.sku)).length}, parça bilgili: ${list.filter((x) => x.pieces).length}, yaş bilgili: ${list.filter((x) => x.age).length}`);
   if (failed > urls.length * 0.2 || list.length < 150) throw new Error('Çok fazla ürün okunamadı');
 
   return {
-    v: 1,
+    v: 2,
     source: 'lego.tr',
     generated: new Date().toISOString(),
     items: Object.fromEntries(
@@ -149,7 +154,7 @@ async function fallback(reason) {
     if (r.status === 200) {
       try {
         const prev = JSON.parse(r.text);
-        if (prev?.items) {
+        if (prev?.items && prev.v >= 2) {
           console.log(`  önceki veri: ${Object.keys(prev.items).length} ürün, ${prev.generated}`);
           return prev;
         }
@@ -159,7 +164,7 @@ async function fallback(reason) {
     }
   }
   console.warn('  önceki veri de yok; Türkiye bilgisi bu yayında boş kalacak.');
-  return { v: 1, source: 'lego.tr', generated: null, items: {} };
+  return { v: 2, source: 'lego.tr', generated: null, items: {} };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

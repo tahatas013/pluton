@@ -3,6 +3,7 @@ import { useCatalog, type LegoSet } from '../data/catalog';
 import { brickVars } from '../data/colors';
 import { PRIOS, useStore, type Wish } from '../data/store';
 import { num } from '../lib/format';
+import { tl } from '../data/avail';
 import { useNav } from '../nav';
 import { Empty } from '../ui/Bits';
 import { Screen } from '../ui/Screen';
@@ -22,6 +23,8 @@ export function Wishlist() {
     [wish, cat],
   );
   const parts = items.reduce((n, x) => n + x.s.parts, 0);
+  const buyable = items.filter((x) => x.s.avail === 'tr' && x.s.tr?.price);
+  const total = buyable.reduce((n, x) => n + (x.s.tr?.price ?? 0), 0);
 
   return (
     <Screen tab="istekler" title="İstekler" eyebrow={items.length ? `${items.length} set seni bekliyor` : 'İstek listen'}>
@@ -39,8 +42,20 @@ export function Wishlist() {
       ) : (
         <>
           <div className="wish-sum brick studs" style={brickVars('pink')}>
-            <b>{num(parts)}</b>
-            <small>parça seni bekliyor</small>
+            {buyable.length > 0 ? (
+              <>
+                <b>{tl(total)}</b>
+                <small>
+                  {buyable.length === items.length ? 'Hepsi' : `${buyable.length} tanesi`} şu an Türkiye'de satışta ·{' '}
+                  {num(parts)} parça
+                </small>
+              </>
+            ) : (
+              <>
+                <b>{num(parts)}</b>
+                <small>parça seni bekliyor</small>
+              </>
+            )}
           </div>
           {PRIOS.map((p) => {
             const group = items.filter((x) => x.w.prio === p.id);

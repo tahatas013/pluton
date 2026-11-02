@@ -33,10 +33,30 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,json}'],
-        globIgnores: ['**/*vietnamese*'],
+        globIgnores: ['**/*vietnamese*', 'data/**'],
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         navigateFallback: 'index.html',
         runtimeCaching: [
+          {
+            // Katalog her gün değişir: çevrimiçiyken tazesini al, değilse önbellektekini kullan
+            urlPattern: ({ url }) => url.pathname.endsWith('/data/catalog.json'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'katalog',
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 2 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+          {
+            urlPattern: ({ url }) => url.hostname === 'lego.witcdn.net',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'lego-tr-gorselleri',
+              expiration: { maxEntries: 150, maxAgeSeconds: 60 * 60 * 24 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             urlPattern: ({ url }) => url.hostname === 'cdn.rebrickable.com',
             handler: 'CacheFirst',

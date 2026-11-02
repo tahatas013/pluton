@@ -8,7 +8,7 @@ import { haptic } from '../lib/haptics';
 import { isIOS, isStandalone, readFlag, writeFlag } from '../lib/platform';
 import { useNav } from '../nav';
 import { Section } from '../ui/Bits';
-import { ArrowRight, CloseIcon, DiceIcon, SearchIcon, ShareIcon } from '../ui/Icons';
+import { ArrowRight, BrickIcon, CloseIcon, DiceIcon, SearchIcon, ShareIcon, TagIcon } from '../ui/Icons';
 import { IsoBuild } from '../ui/IsoBuild';
 import { Screen } from '../ui/Screen';
 import { Rail, SetImage } from '../ui/SetBits';
@@ -32,6 +32,21 @@ export function Discover() {
   const recentSets = recent.map((n) => cat.byNum.get(n)).filter((s): s is LegoSet => !!s).slice(0, 12);
   const [installHint, setInstallHint] = useState(() => isIOS() && !isStandalone() && !readFlag('pluton:kurulum'));
   const thisYear = cat.latestYear === new Date().getFullYear();
+
+  const tr = useMemo(() => {
+    const inTr = cat.sets.filter((s) => s.avail === 'tr' || s.avail === 'tr-pre');
+    const fresh = [...inTr]
+      .sort((a, b) => (b.tr?.since ?? '').localeCompare(a.tr?.since ?? '') || b.year - a.year || b.parts - a.parts)
+      .slice(0, 14);
+    const abroad = cat.sets.filter((s) => s.avail === 'abroad');
+    return {
+      count: inTr.length,
+      latestCount: latest.filter((s) => s.tr).length,
+      fresh,
+      abroad: abroad.slice(0, 14),
+      abroadCount: abroad.length,
+    };
+  }, [cat, latest]);
 
   return (
     <Screen tab="kesfet" title="Keşfet" eyebrow={greeting()}>
@@ -78,6 +93,7 @@ export function Discover() {
           <span className="hero-label">
             {num(latest.length)} yeni set <ArrowRight size={17} />
           </span>
+          {tr.count > 0 && <span className="hero-sub">{num(tr.latestCount)} tanesi Türkiye'de</span>}
           {cover && (
             <span className="hero-sticker">
               <SetImage set={cover} />
@@ -100,17 +116,47 @@ export function Discover() {
           </button>
         ))}
 
+        {tr.count > 0 && (
+          <button
+            className="brick studs press half"
+            style={brickVars('green')}
+            onClick={() => {
+              haptic();
+              nav.push({
+                title: "Türkiye'de satışta",
+                eyebrow: 'lego.tr',
+                color: 'green',
+                query: { avail: 'tr' },
+              });
+            }}
+          >
+            <TagIcon size={22} className="half-ic" />
+            <b>Türkiye'de satışta</b>
+            <small>{num(tr.count)} set</small>
+          </button>
+        )}
         <button
-          className="brick studs press wide"
-          style={brickVars('green')}
+          className={`brick studs press ${tr.count > 0 ? 'half' : 'wide'}`}
+          style={brickVars(tr.count > 0 ? 'blue' : 'green')}
           onClick={() => {
             haptic();
-            nav.push({ title: 'Dev yapılar', eyebrow: '3.000+ parça', color: 'green', query: { minParts: 3000 } });
+            nav.push({
+              title: 'Dev yapılar',
+              eyebrow: '3.000+ parça',
+              color: tr.count > 0 ? 'blue' : 'green',
+              query: { minParts: 3000 },
+            });
           }}
         >
+          {tr.count > 0 ? <BrickIcon size={22} className="half-ic" /> : null}
           <b>Dev yapılar</b>
-          <small>3.000+ parça · {num(bigCount)} set</small>
-          <IsoBuild seed={20261102} className="wide-art" colors={['blue', 'yellow', 'red', 'orange']} />
+          <small>
+            {tr.count > 0 ? '' : '3.000+ parça · '}
+            {num(bigCount)} set
+          </small>
+          {tr.count === 0 && (
+            <IsoBuild seed={20261102} className="wide-art" colors={['blue', 'yellow', 'red', 'orange']} />
+          )}
         </button>
       </div>
 
@@ -154,6 +200,36 @@ export function Discover() {
         </div>
       </Section>
 
+      {tr.fresh.length > 0 && (
+        <Section title="Türkiye'de yeni">
+          <Rail sets={tr.fresh} />
+        </Section>
+      )}
+
+      {tr.abroad.length > 0 && (
+        <Section
+          title="Yalnızca yurt dışında"
+          action={
+            <button
+              className="tile press more-btn"
+              onClick={() => {
+                haptic();
+                nav.push({
+                  title: 'Yalnızca yurt dışında',
+                  eyebrow: `${num(tr.abroadCount)} set Türkiye'de yok`,
+                  color: 'navy',
+                  query: { avail: 'abroad' },
+                });
+              }}
+            >
+              Tümü
+            </button>
+          }
+        >
+          <Rail sets={tr.abroad} />
+        </Section>
+      )}
+
       <Section title={thisYear ? 'Bu yılın en büyükleri' : `${cat.latestYear} en büyükleri`}>
         <Rail sets={latest.slice(0, 14)} />
       </Section>
@@ -167,6 +243,7 @@ export function Discover() {
       <p className="foot tile">
         {num(cat.sets.length)} set · Katalog {dateTR(cat.generated)}
         {cat.source === 'dev-fixture' ? ' · örnek veri' : ' · Rebrickable'}
+        {cat.trGenerated && <> · Türkiye fiyatları {dateTR(cat.trGenerated)}</>}
       </p>
     </Screen>
   );

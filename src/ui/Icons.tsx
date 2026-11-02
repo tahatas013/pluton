@@ -153,3 +153,24 @@ export const TrashIcon = (p: P) => (
     <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13" />
   </svg>
 );
+
+export const GlobeIcon = (p: P) => (
+  <svg {...base(p)} strokeWidth={2.2}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5s-1.2 6.1-3.6 8.5c-2.4-2.4-3.6-5.2-3.6-8.5S9.6 5.9 12 3.5z" />
+  </svg>
+);
+
+export const TagIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M3.5 12.6V4.5a1 1 0 011-1h8.1l8 8a1.5 1.5 0 010 2.1l-6 6a1.5 1.5 0 01-2.1 0z" />
+    <circle cx="8.3" cy="8.3" r="1.6" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+export const CakeIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4.5 20.5h15M5.5 20.5v-6.5a2 2 0 012-2h9a2 2 0 012 2v6.5M5.5 16c1.5 1 2.8 1 4.2 0s2.8-1 4.2 0 2.8 1 4.6 0M12 12V8.5" />
+    <path d="M12 3.5c1 1.2 1.3 2.2.9 3a1 1 0 01-1.8 0c-.4-.8-.1-1.8.9-3z" fill="currentColor" />
+  </svg>
+);

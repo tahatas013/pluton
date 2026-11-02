@@ -76,13 +76,26 @@ const sets = [
   ['41757-1', 'Botanical Garden', 2023, 494, 1072, 7],
   ['21058-1', 'Great Pyramid of Giza', 2022, 252, 1476, 0],
   ['21060-1', 'Himeji Castle', 2023, 252, 2125, 0],
-].map((s) => [...s, 1]);
+].map((s) => [...s, 1, 0]);
+
+// Örnek Türkiye verisi (yalnızca arayüzü denemek için; fiyatlar uydurmadır)
+const TR = {
+  '10333-1': ['s', 21999, '/product/10333-ornek', 'Yüzüklerin Efendisi: Barad-dûr', '18+', '2024-06-01'],
+  '10332-1': ['s', 9499, '/product/10332-ornek', 'Ortaçağ Kasaba Meydanı', '18+', '2024-03-01'],
+  '75375-1': ['s', 4299, '/product/75375-ornek', 'Millennium Falcon', '18+', '2024-03-01'],
+  '42172-1': ['t', 22999, '/product/42172-ornek', 'McLaren P1', '18+', '2024-08-01'],
+  '10328-1': ['s', 2499, '/product/10328-ornek', 'Gül Buketi', '18+', '2024-01-01'],
+  '21348-1': ['o', 15999, '/product/21348-ornek', 'Dungeons & Dragons: Kırmızı Ejderhanın Hikâyesi', '18+', '2024-04-01'],
+  '10316-1': ['s', 19999, '/product/10316-ornek', 'Yüzüklerin Efendisi: Ayrıkvadi', '18+', '2023-03-01'],
+  '76419-1': ['t', 7999, '/product/76419-ornek', 'Hogwarts Şatosu ve Arazisi', '18+', '2023-03-01'],
+};
+for (const s of sets) if (TR[s[0]]) s[7] = TR[s[0]];
 
 sets.sort((a, b) => b[2] - a[2] || b[4] - a[4]);
 
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(
   OUT,
-  JSON.stringify({ v: 1, source: 'dev-fixture', generated: new Date().toISOString(), themes, sets }),
+  JSON.stringify({ v: 2, source: 'dev-fixture', generated: new Date().toISOString(), trGenerated: new Date().toISOString(), themes, sets }),
 );
 console.log(`Geliştirme kataloğu yazıldı (${sets.length} set) → ${OUT}`);

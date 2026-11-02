@@ -1570,3 +1570,135 @@ p {
     grid-column: span 8;
   }
 }
+
+/* ── Türkiye durumu ── */
+
+.avail-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100% - 28px);
+  padding: 3px 8px 4px;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--on);
+  box-shadow: 0 2px 0 var(--edge);
+  font: 750 11.5px/1.2 var(--font);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.avail-badge.inline {
+  position: static;
+  margin-top: 7px;
+  width: max-content;
+}
+
+.hero-sub {
+  margin-top: 4px;
+  font: 600 13px var(--font);
+  opacity: 0.88;
+}
+
+.half {
+  grid-column: span 2;
+  min-height: 112px;
+  padding: 30px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  text-align: left;
+  border-radius: 18px;
+}
+.half b {
+  font: 800 18px/1.05 var(--font-display);
+  letter-spacing: -0.015em;
+}
+.half small {
+  margin-top: 4px;
+  font: 600 13px var(--font);
+  opacity: 0.88;
+}
+.half-ic {
+  position: absolute;
+  top: 26px;
+  right: 14px;
+  opacity: 0.9;
+}
+@media (min-width: 600px) {
+  .half {
+    grid-column: span 4;
+  }
+}
+
+.more-btn {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font: 700 13.5px var(--font);
+  box-shadow: 0 3px 0 var(--edge);
+}
+
+.tr-name {
+  margin: -6px 0 12px;
+  font: 600 15px/1.35 var(--font);
+  color: var(--muted);
+}
+
+.specs-4 {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.specs-4 .spec {
+  padding: 28px 9px 11px;
+}
+.specs-4 .spec b {
+  font-size: 19px;
+}
+
+.tr-panel {
+  margin-top: 14px;
+  padding: 30px 16px 16px;
+  border-radius: 20px;
+}
+.tr-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 800 18px/1.15 var(--font-display);
+  letter-spacing: -0.01em;
+}
+.tr-price {
+  margin-top: 8px;
+  font: 800 38px/1 var(--font-display);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.tr-panel p {
+  margin-top: 8px;
+  font: 500 14.5px/1.45 var(--font);
+  opacity: 0.95;
+}
+.tr-btn {
+  --edge: rgba(0, 0, 0, 0.25);
+  margin-top: 14px;
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #10284a;
+  font: 750 15px var(--font);
+  box-shadow: 0 3px 0 var(--edge);
+}
+.tr-note {
+  display: block;
+  margin-top: 12px;
+  font: 500 12px var(--font);
+  opacity: 0.8;
+}

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { themeLabel, useCatalog } from '../data/catalog';
+import { themeLabel, useCatalog, type LegoSet } from '../data/catalog';
+import { AVAIL_INFO, tl } from '../data/avail';
 import { brickVars } from '../data/colors';
 import { PRIOS, STATUSES, actions, useStore } from '../data/store';
-import { num } from '../lib/format';
+import { dateTR, fold, num } from '../lib/format';
 import { haptic } from '../lib/haptics';
 import { instructionsUrl, rebrickableUrl, shopLinks } from '../lib/links';
 import { Burst, Section } from '../ui/Bits';
@@ -11,13 +12,16 @@ import { BrickChoice } from '../ui/Choice';
 import {
   BookIcon,
   BrickIcon,
+  CakeIcon,
   CalendarIcon,
   CheckIcon,
   ExternalIcon,
   FigureIcon,
+  GlobeIcon,
   HeartIcon,
   MinusIcon,
   PlusIcon,
+  TagIcon,
 } from '../ui/Icons';
 import { Rail, SetImage } from '../ui/SetBits';
 import { useSheetDrag } from '../ui/Sheet';
@@ -76,13 +80,14 @@ export function SetDetail({ num: setNum }: { num: string }) {
       <div className="detail-info tile">
         <div className="eyebrow">{themeLabel(cat, s)}</div>
         <h2>{s.name}</h2>
+        {s.tr?.name && fold(s.tr.name) !== fold(s.name) && <div className="tr-name">{s.tr.name}</div>}
         <span className="chip-num big">{s.base}</span>
       </div>
 
-      <div className="specs">
+      <div className={`specs ${s.tr?.age ? 'specs-4' : ''}`}>
         <div className="spec brick studs" style={brickVars('blue')}>
           <BrickIcon size={18} />
-          <b>{num(s.parts)}</b>
+          <b>{s.parts > 0 ? num(s.parts) : '–'}</b>
           <small>parça</small>
         </div>
         <div className="spec brick studs" style={brickVars('red')}>
@@ -93,9 +98,18 @@ export function SetDetail({ num: setNum }: { num: string }) {
         <div className="spec brick studs" style={brickVars('green')}>
           <CalendarIcon size={18} />
           <b>{s.year}</b>
-          <small>çıkış yılı</small>
+          <small>yılı</small>
         </div>
+        {s.tr?.age && (
+          <div className="spec brick studs" style={brickVars('yellow')}>
+            <CakeIcon size={18} />
+            <b>{s.tr.age}</b>
+            <small>yaş</small>
+          </div>
+        )}
       </div>
+
+      <TrPanel s={s} date={cat.trGenerated} />
 
       <div className="action-zone">
       <Burst trigger={burst} />
@@ -201,7 +215,7 @@ export function SetDetail({ num: setNum }: { num: string }) {
       )}
 
       <div className="panel tile">
-        <div className="panel-title">Türkiye'de ara</div>
+        <div className="panel-title">{s.tr ? 'Diğer mağazalarda karşılaştır' : 'Türk mağazalarında ara'}</div>
         <div className="shops">
           {shopLinks(s).map((l) => (
             <a key={l.name} className="shop press" href={l.url} target="_blank" rel="noopener noreferrer">
@@ -227,6 +241,53 @@ export function SetDetail({ num: setNum }: { num: string }) {
           <Rail sets={related} />
         </Section>
       )}
+    </div>
+  );
+}
+
+function TrPanel({ s, date }: { s: LegoSet; date: string | null }) {
+  const info = AVAIL_INFO[s.avail];
+  if (!info) return null;
+  const price = s.tr?.price ?? null;
+  return (
+    <div className="tr-panel brick studs" style={brickVars(info.color)}>
+      <div className="tr-head">
+        {s.avail === 'abroad' ? <GlobeIcon size={18} /> : <TagIcon size={18} />}
+        <span>{info.label}</span>
+      </div>
+      {(s.avail === 'tr' || s.avail === 'tr-pre') && price != null && <div className="tr-price">{tl(price)}</div>}
+      {s.avail === 'tr-pre' && <p>Resmi Türkiye mağazasında ön siparişle alınabiliyor.</p>}
+      {s.avail === 'tr-out' && (
+        <p>
+          {price != null && <>Son fiyatı {tl(price)}. </>}
+          lego.tr'deki “Gelince haber ver” ile stoğa girince haber alabilirsin.
+        </p>
+      )}
+      {s.avail === 'abroad' && (
+        <p>
+          Resmi Türkiye mağazası lego.tr'de yok. Yurt dışında satılıyor; ithalatçılar ve pazar yerleri bazen
+          getiriyor.
+        </p>
+      )}
+      {s.avail === 'soon' && <p>Duyuruldu, henüz satışa çıkmadı. {s.year} içinde çıkması bekleniyor.</p>}
+      {s.avail === 'retired' && (
+        <p>Bu set artık resmi mağazalarda satılmıyor. İkinci elde ya da koleksiyoncularda bulunabilir.</p>
+      )}
+      {s.tr ? (
+        <a className="tr-btn press" href={s.tr.url} target="_blank" rel="noopener noreferrer">
+          lego.tr'de aç <ExternalIcon size={15} />
+        </a>
+      ) : s.avail === 'abroad' ? (
+        <a
+          className="tr-btn press"
+          href={`https://www.lego.com/search?q=${encodeURIComponent(s.base)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          LEGO.com'da bak <ExternalIcon size={15} />
+        </a>
+      ) : null}
+      {s.tr && date && <small className="tr-note">lego.tr verisi · {dateTR(date)}</small>}
     </div>
   );
 }

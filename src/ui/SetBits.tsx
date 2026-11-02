@@ -1,10 +1,11 @@
 import { memo, useState, type ReactNode } from 'react';
 import type { LegoSet } from '../data/catalog';
 import { useStore } from '../data/store';
-import { num } from '../lib/format';
+import { availBadge, partsLabel } from '../data/avail';
+import { brickVars } from '../data/colors';
 import { useNav } from '../nav';
 import { haptic } from '../lib/haptics';
-import { CheckIcon, ChevronRight, HeartIcon } from './Icons';
+import { CheckIcon, ChevronRight, GlobeIcon, HeartIcon } from './Icons';
 import { IsoBuild, hashSeed } from './IsoBuild';
 
 export const SetImage = memo(function SetImage({ set, className }: { set: LegoSet; className?: string }) {
@@ -27,6 +28,17 @@ export const SetImage = memo(function SetImage({ set, className }: { set: LegoSe
     </div>
   );
 });
+
+export function AvailBadge({ set, inline }: { set: LegoSet; inline?: boolean }) {
+  const b = availBadge(set);
+  if (!b) return null;
+  return (
+    <span className={`avail-badge ${inline ? 'inline' : ''}`} style={brickVars(b.color)}>
+      {b.abroad && <GlobeIcon size={12} />}
+      {b.text}
+    </span>
+  );
+}
 
 function Marks({ num: n }: { num: string }) {
   const owned = useStore((s) => !!s.owned[n]);
@@ -60,11 +72,12 @@ export const SetCard = memo(function SetCard({ set, badge }: { set: LegoSet; bad
     >
       <SetImage set={set} />
       {badge ?? <Marks num={set.num} />}
+      <AvailBadge set={set} />
       <div className="set-card-body">
         <div className="set-card-name">{set.name}</div>
         <div className="set-card-meta">
           <span className="chip-num">{set.base}</span>
-          <span>{num(set.parts)} parça</span>
+          <span>{partsLabel(set)}</span>
         </div>
       </div>
     </button>
@@ -93,9 +106,10 @@ export const SetRow = memo(function SetRow({
         <div className="set-row-meta">
           <span className="chip-num">{set.base}</span>
           <span>
-            {set.year} · {num(set.parts)} parça
+            {set.year} · {partsLabel(set)}
           </span>
         </div>
+        <AvailBadge set={set} inline />
         {extra}
       </div>
       <Marks num={set.num} />

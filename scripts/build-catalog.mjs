@@ -82,7 +82,9 @@ const [themesRaw, setsRaw, inventories, invFigs] = await Promise.all([
   download('inventory_minifigs'),
 ]);
 
-const tr = existsSync(TR_FILE) ? JSON.parse(readFileSync(TR_FILE, 'utf8')) : { items: {}, generated: null };
+const trRaw = existsSync(TR_FILE) ? JSON.parse(readFileSync(TR_FILE, 'utf8')) : null;
+// v1 dosyalarında set numarası yanlış eşleşebiliyordu; yalnızca v2 ve sonrası kullanılır
+const tr = trRaw && trRaw.v >= 2 ? trRaw : { items: {}, generated: null };
 const trItems = tr.items ?? {};
 console.log(`lego.tr verisi: ${Object.keys(trItems).length} ürün (${tr.generated ?? 'yok'})`);
 const trUsed = new Set();
@@ -158,8 +160,13 @@ for (const s of setsRaw) {
 
 // lego.tr'de olup Rebrickable'da henüz olmayan ürünler (çok yeni setler, aksesuarlar)
 const norm = (x) => x.toLowerCase().replace(/lego|[®™]/g, '').replace(/[^a-z0-9]+/g, '');
+// lego.tr kategorisini Rebrickable temasıyla eşle (önce ana temalar, sonra alt temalar)
 const rootByName = new Map();
+for (const t of themeById.values()) if (t.parent != null && !rootByName.has(norm(t.name))) rootByName.set(norm(t.name), t.id);
 for (const t of themeById.values()) if (t.parent == null) rootByName.set(norm(t.name), t.id);
+for (const [alias, target] of [['iconic', 'icons'], ['dcsuperheroes', 'superheroesdc'], ['marvelsuperheroes', 'superheroesmarvel'], ['anahtarliklar', 'keychains']]) {
+  if (!rootByName.has(alias) && rootByName.has(target)) rootByName.set(alias, rootByName.get(target));
+}
 const extraThemes = new Map();
 let trOnly = 0;
 for (const [sku, t] of Object.entries(trItems)) {
